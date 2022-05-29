@@ -183,7 +183,6 @@ const Tree = (props: any) => {
     setMappedData(handleDataMap(data));
   }, []);
 
-  console.log(mappedData);
   return (
     <div>
       <Container>
