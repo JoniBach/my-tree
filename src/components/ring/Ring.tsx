@@ -29,11 +29,21 @@ const styleB = {
   borderWidth: 2,
   zIndex: -1,
 };
+const styleC = {
+  delay: true,
+  borderColor: "red",
+  borderStyle: "dotted",
+  borderWidth: 2,
+  zIndex: -1,
+};
 
 const Center = styled(motion.div)`
   display: flex;
   align-self: center;
   position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 `;
 
 const Item = styled(motion.div)<StyledItemProps>`
@@ -68,6 +78,8 @@ type ItemTypes = {
   total: number;
   active?: number;
   setActive?: any;
+  expand?: boolean;
+  openParent?: any;
 };
 type GroupTypes = {
   data: any;
@@ -76,8 +88,13 @@ type GroupTypes = {
   active?: number;
   setActive?: any;
   sub?: number;
+  expand?: boolean;
+  openParent?: any;
 };
-
+type CenterTypes = {
+  expand: boolean;
+  setExpand: (e: boolean) => void;
+};
 const handleRotation = (index: number, quantity: number) => {
   const total = 360;
   const base = total / quantity;
@@ -88,10 +105,12 @@ const handleRotation = (index: number, quantity: number) => {
   return group;
 };
 
-const CenterItem = () => {
+const CenterItem = ({ expand, setExpand }: CenterTypes) => {
   return (
     <Center className="center-item">
-      <Button circle>x</Button>
+      <Button onClick={() => setExpand(!expand)} circle>
+        {expand ? "-" : "+"}
+      </Button>
     </Center>
   );
 };
@@ -103,7 +122,10 @@ const RingItem = ({
   index,
   total,
   setActive,
+  active,
   sub,
+  expand,
+  openParent,
 }: ItemTypes) => {
   const newTotal = sub ? sub : total;
   const { counter } = handleRotation(index, total);
@@ -141,9 +163,7 @@ const RingItem = ({
         className={`${sub ? "sub" : "base"}${label}`}
       >
         {/* <Link to={`/${path}`}> */}
-        <Button onClick={() => setActive(index)} circle>
-          {label}
-        </Button>
+        <Button onClick={() => setActive(index)}>{label}</Button>
         {/* </Link> */}
       </Item>
     </>
@@ -157,22 +177,36 @@ const RingGroup = ({
   sub,
   setActive,
   active,
+  expand,
+  openParent,
 }: GroupTypes) => {
   const showOuter = sub;
   const selectedData = showOuter ? (active || active === 0 ? data : []) : data;
-
+  console.log(sub);
   return (
     <>
       {/* <Group></Group> */}
-      <CenterItem />
       {selectedData.map((props: any, index: number) => (
         <Container initialRotation={handleRotation(index, data.length).initial}>
           {/* sub ? data.length * 2 : */}
           <RingItem
+            expand={expand}
             setActive={setActive}
+            active={active}
             total={data.length}
             index={index}
-            label={index}
+            label={
+              expand
+                ? sub
+                  ? props.label
+                  : openParent
+                  ? index
+                  : props.label
+                : !sub
+                ? index
+                : index
+            }
+            // label={expand ? (sub ? "c" : "b") : !sub ? "a" : "d"}
             parentLabel={parentLabel}
             path={path}
             sub={sub}
@@ -208,26 +242,42 @@ const Ring = (props: any) => {
   useEffect(() => {
     setMappedData(handleDataMap(data));
   }, []);
+  const [expand, setExpand] = useState(false);
 
   return (
-    <div>
+    <>
+      {(active || active === 0) && (
+        <Line
+          from={`base${active}`}
+          to={`center-item`}
+          toAnchor="center"
+          {...styleC}
+        />
+      )}
       <Container>
         {mappedData.length === 0 ? (
           "loading"
         ) : (
           <>
-            <RingGroup data={mappedData} setActive={setActive} />
+            <RingGroup
+              expand={expand}
+              data={mappedData}
+              setActive={setActive}
+              openParent={active || active === 0}
+            />
             {(active || active === 0) && (
               <RingGroup
                 data={mappedData[active].data}
                 active={active}
                 sub={mappedData.length}
+                expand={expand}
               />
             )}
           </>
         )}
       </Container>
-    </div>
+      <CenterItem expand={expand} setExpand={setExpand} />
+    </>
   );
 };
 
