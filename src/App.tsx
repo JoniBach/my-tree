@@ -5,6 +5,8 @@ import Surface from "./components/surface/Surface";
 import Tree from "./components/tree/Tree";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { data } from "./mock/tree";
+import Ring from "./components/ring/Ring";
+import { mockCircle } from "./mock/circle";
 
 const App = () => {
   return (
@@ -14,7 +16,8 @@ const App = () => {
 
       <Router>
         <Routes>
-          <Route path="/" element={<Tree data={data} />}></Route>
+          <Route path="/tree" element={<Tree data={data} />}></Route>
+          <Route path="/ring" element={<Ring data={mockCircle} />}></Route>
         </Routes>
       </Router>
       {/* </Surface> */}
